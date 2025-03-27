@@ -1,7 +1,10 @@
-import { useState } from 'react'
-import Table from 'react-bootstrap/Table';
+import { useEffect } from 'react'
+import Table from 'react-bootstrap/Table'
+import Button from 'react-bootstrap/Button'
+import { doc, deleteDoc } from 'firebase/firestore'
+import { db } from '../config/firebase'
 
-function Employees() {
+function Employees({ employees, fetchEmployees }) {
   const headings = [
     'ID',
     'Name',
@@ -10,24 +13,20 @@ function Employees() {
     'Designation',
     'Date of joining'
   ]
-  const [employees, setEmployees] = useState([
-    {
-      "id": 1,
-      "name": "Apurva",
-      "email": "apurva@gmail.com",
-      "department": "Engineering",
-      "designation": "SE",
-      "dateOfJoining": "2025-02-14"
-    },
-    {
-      "id": 2,
-      "name": "Poornima",
-      "email": "poornima@gmail.com",
-      "department": "HR",
-      "designation": "Senior HR",
-      "dateOfJoining": "2025-02-01"
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
+
+  const deleteEmployee = async (employeedId) => {
+    try {
+      const employeesRef = doc(db, "employees", employeedId)
+      await deleteDoc(employeesRef)
+      fetchEmployees()
+    } catch (error) {
+      console.log(error)
     }
-  ])
+  }
 
   return (
     <div style={{ textAlign: 'left' }}>
@@ -38,14 +37,25 @@ function Employees() {
             {headings.map((heading, index) => (
               <th key={index}>{heading}</th>
             ))}
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {employees.map((employee, index) => (
             <tr key={index}>
-              {Object.values(employee).map((value, index2) => (
-                <td key={index2}>{value}</td>
-              ))}
+               <td className='fw-medium'>{employee.id.toUpperCase()}</td>
+               <td>{employee.name}</td>
+               <td>{employee.email}</td>
+               <td>{employee.department}</td>
+               <td>{employee.designation}</td>
+               <td>{employee.dateOfJoining}</td>
+               <td>
+                <Button 
+                  variant="danger"
+                  className='btn-sm'
+                  onClick={() => deleteEmployee(employee.id)}
+                >Delete</Button>
+               </td>
             </tr>
           ))}
         </tbody>

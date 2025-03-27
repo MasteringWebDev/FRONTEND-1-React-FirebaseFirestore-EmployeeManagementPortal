@@ -2,9 +2,16 @@ import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert';
+import {
+  collection,
+  addDoc
+} from 'firebase/firestore'
+import { db } from '../config/firebase'
 
-function AddNew() {
+function AddNew({ fetchEmployees }) {
   const [show, setShow] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const defaultDetails = {
     name: '',
     email: '',
@@ -17,8 +24,16 @@ function AddNew() {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const handleSubmit = () => {
-    console.log(newEmployee)
+  const handleSubmit = async () => {
+    try {
+      const employeesRef = collection(db, "employees")
+      await addDoc(employeesRef, newEmployee)
+      setShowAlert(true)
+      fetchEmployees()
+    } catch(error) {
+      console.log(error)
+    }
+
     handleClose()
     setNewEmployee(defaultDetails)
   }
@@ -105,6 +120,24 @@ function AddNew() {
           </Button>
         </Modal.Footer>
       </Modal>
+      {showAlert && (
+        <Alert 
+          className='w-50'
+          variant="success" 
+          onClose={() => setShowAlert(false)} 
+          dismissible
+          style={{
+            position: 'absolute',
+            top: '1em',
+            right: '1em'
+          }}
+        >
+          <Alert.Heading>Success!</Alert.Heading>
+          <p>
+            Employee successfully added ✅
+          </p>
+        </Alert>
+      )}
     </>
   );
 }
